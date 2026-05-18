@@ -1,0 +1,145 @@
+{
+  "name":          "s3",
+  "version":       "0.1.0",
+  "description":   "Generic S3-compatible storage connector — works with AWS S3, Wasabi, MinIO, DigitalOcean Spaces, Cloudflare R2, Backblaze B2, and anything else that speaks the S3 API. Operations cover buckets, files, and folders (folders are S3 prefixes). Mirrors n8n's generic S3 node. Auth via a workspace `generic` config holding accessKeyId + secretAccessKey + endpoint + region.",
+  "ui":            { "category": "storage", "icon": "amazon-s3" },
+  "primaryOutput": "result",
+
+  "configRefs": [
+    {
+      "name":        "s3",
+      "type":        "generic",
+      "required":    true,
+      "description": "Generic config: { endpoint, region, accessKeyId, secretAccessKey, forcePathStyle? }. `endpoint` is the service URL (e.g. https://s3.amazonaws.com, https://s3.wasabisys.com, http://minio:9000). `forcePathStyle: true` is required for MinIO and some on-prem setups."
+    }
+  ],
+
+  "inputSchema": {
+    "type": "object",
+    "required": ["operation"],
+    "properties": {
+      "operation": {
+        "type": "string",
+        "description": "Which S3 call to run.",
+        "enum": [
+          "bucket.getAll",
+          "bucket.create",
+          "bucket.delete",
+          "bucket.search",
+          "file.getAll",
+          "file.upload",
+          "file.download",
+          "file.copy",
+          "file.delete",
+          "folder.create",
+          "folder.getAll",
+          "folder.delete"
+        ]
+      },
+
+      "config": {
+        "type": "string",
+        "description": "Workspace config name to read credentials from. Default: 's3'."
+      },
+
+      "bucket": {
+        "type": "string",
+        "description": "Bucket name. Required for: bucket.create / bucket.delete / bucket.search / file.* / folder.*."
+      },
+
+      "key": {
+        "type": "string",
+        "description": "Object key (path within the bucket). Required for: file.upload / file.download / file.copy / file.delete."
+      },
+
+      "prefix": {
+        "type": "string",
+        "description": "Key prefix filter. Used by: bucket.search / file.getAll / folder.getAll / folder.delete."
+      },
+
+      "delimiter": {
+        "type": "string",
+        "default": "/",
+        "description": "Delimiter used to group keys into 'folders'. Default '/'. Used by: folder.getAll."
+      },
+
+      "maxKeys": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "default": 1000,
+        "description": "Page size for list operations (S3 caps this at 1000)."
+      },
+
+      "continuationToken": {
+        "type": "string",
+        "description": "Opaque pagination token from a previous list response."
+      },
+
+      "body": {
+        "type": "string",
+        "description": "Object content for file.upload. Plain text by default; set `bodyEncoding: 'base64'` to upload binary data."
+      },
+      "bodyEncoding": {
+        "type": "string",
+        "enum": ["utf8", "base64"],
+        "default": "utf8",
+        "description": "How to interpret `body`. Use 'base64' to upload binary files."
+      },
+      "contentType": {
+        "type": "string",
+        "description": "Content-Type header for file.upload. Default: application/octet-stream (binary) or text/plain (utf8)."
+      },
+      "metadata": {
+        "type": "object",
+        "description": "User metadata for file.upload. Each key is sent as x-amz-meta-<key>."
+      },
+      "acl": {
+        "type": "string",
+        "enum": ["private", "public-read", "public-read-write", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"],
+        "description": "Canned ACL for file.upload / folder.create / bucket.create. Wasabi note: Wasabi enforces these via x-amz-acl; some buckets disable ACLs entirely."
+      },
+
+      "copySource": {
+        "type": "string",
+        "description": "Source for file.copy in `bucket/key` form (e.g. 'src-bucket/path/to/file.txt'). The destination is bucket+key."
+      },
+
+      "folderName": {
+        "type": "string",
+        "description": "Folder name for folder.create. Will be created as an empty object with key ending in '/'."
+      },
+
+      "responseEncoding": {
+        "type": "string",
+        "enum": ["utf8", "base64"],
+        "default": "base64",
+        "description": "How file.download returns the body. 'base64' is safe for binary. 'utf8' for text-only objects."
+      },
+
+      "region": {
+        "type": "string",
+        "description": "Override the region from the config for this call only."
+      },
+
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 120000,
+        "default": 30000
+      }
+    }
+  },
+
+  "outputSchema": {
+    "type": "object",
+    "required": ["ok", "operation"],
+    "properties": {
+      "ok":        { "type": "boolean" },
+      "operation": { "type": "string", "description": "Echo of the input operation that ran." },
+      "status":    { "type": "integer", "description": "HTTP status from the underlying S3 call." },
+      "result":    { "description": "Operation-specific payload. See README for shapes." },
+      "url":       { "type": "string", "description": "Deep-link to the affected bucket/object on the endpoint (when applicable)." }
+    }
+  }
+}
