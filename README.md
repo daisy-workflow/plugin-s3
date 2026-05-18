@@ -5,6 +5,9 @@ Tested with AWS S3, Wasabi, MinIO, Cloudflare R2, DigitalOcean Spaces,
 and Backblaze B2. Modeled on n8n's
 [generic S3 node](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.s3/).
 
+
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-Image-blue?logo=docker)](https://hub.docker.com/repository/docker/vivek13186/daisy-plugin-asw-s3)
+
 The action is selected per-node via the **operation** dropdown.
 
 ## Operations
