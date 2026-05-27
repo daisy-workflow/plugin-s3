@@ -1,4 +1,4 @@
-# s3 plugin for Daisy-workflow
+# s3 plugin for Daisy AI Orchestrator
 
 One Daisy node that talks to any **S3-compatible** storage service.
 Tested with AWS S3, Wasabi, MinIO, Cloudflare R2, DigitalOcean Spaces,
